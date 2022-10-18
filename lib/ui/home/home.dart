@@ -1,86 +1,63 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:weather/bloc/home/home_bloc.dart';
+import 'package:weather/bloc/home/home_event.dart';
+import 'package:weather/bloc/home/home_state.dart';
+import 'package:weather/di/injection.dart';
 
-void main() {
-  runApp(const MyApp());
+class HomePage extends StatefulWidget {
+  const HomePage({Key? key}) : super(key: key);
+
+  @override
+  State<HomePage> createState() => _HomePageState();
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
-
-  // This widget is the root of your application.
+class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  @override
-  Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Container(
-      height: MediaQuery.of(context).size.height,
-      width: MediaQuery.of(context).size.width,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-            colors: [Color(0xff08244f), Color(0xff134cb5), Color(0xff134cb5)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight),
-      ),
-      padding: EdgeInsets.only(
-        top: MediaQuery.of(context).viewPadding.top,
-        left: 32,
-        right: 32,
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            _buildLocationAndNotification(),
-            _buildPrimaryWeather(),
-            _buildIntroStatsChips(),
-            _buildForecastToday(),
-            _buildNextForecast(),
-          ],
+    return BlocProvider(
+      create: (_) =>
+          HomeBloc(weatherRepository: getIt.get())..add(HomeLoaded()),
+      child: Container(
+        height: MediaQuery.of(context).size.height,
+        width: MediaQuery.of(context).size.width,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+              colors: [Color(0xff08244f), Color(0xff134cb5), Color(0xff134cb5)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight),
+        ),
+        padding: EdgeInsets.only(
+          top: MediaQuery.of(context).viewPadding.top,
+          left: 32,
+          right: 32,
+        ),
+        child: SingleChildScrollView(
+          child: BlocBuilder<HomeBloc, HomeState>(builder: (context, state) {
+            switch (state.runtimeType) {
+              case HomeLoadSuccess:
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: <Widget>[
+                    _buildLocationAndNotification(),
+                    _buildPrimaryWeather(),
+                    _buildIntroStatsChips(),
+                    _buildForecastToday(),
+                    _buildNextForecast(),
+                  ],
+                );
+              case HomeLoading:
+                return Container(
+                  height: MediaQuery.of(context).size.height,
+                  alignment: Alignment.center,
+                  child: const CircularProgressIndicator(),
+                );
+              case HomeLoadFailed:
+                return Row();
+            }
+            return Row();
+          }),
         ),
       ),
     );
@@ -128,7 +105,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget _buildPrimaryWeather() {
     return Column(
       children: [
-        Image.asset("assets/images/img_sun_cloud.png"),
+        Image.asset("assets/images/img_sunny_1.png"),
         const Padding(
           padding: EdgeInsets.only(top: 0),
           child: DefaultTextStyle(
@@ -252,14 +229,17 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
+                    _buildHourWeatherItem("15:00",
+                        "assets/icons/ic_wind_sunny.svg", "29°C", false),
                     _buildHourWeatherItem(
-                        "15:00", "assets/ic_wind_sunny.svg", "29°C", false),
+                        "16:00", "assets/icons/ic_sunny.svg", "29°C", false),
+                    _buildHourWeatherItem("17:00",
+                        "assets/icons/ic_sunny_small_rain.svg", "29°C", true),
                     _buildHourWeatherItem(
-                        "15:00", "assets/ic_wind_sunny.svg", "29°C", false),
-                    _buildHourWeatherItem(
-                        "15:00", "assets/ic_wind_sunny.svg", "29°C", true),
-                    _buildHourWeatherItem(
-                        "15:00", "assets/ic_wind_sunny.svg", "29°C", false),
+                        "18:00",
+                        "assets/icons/ic_sunny_small_rain_snow.svg",
+                        "29°C",
+                        false),
                   ],
                 ),
               )
@@ -332,14 +312,14 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ],
               ),
+              _buildDayOfWeekForecastItem("Monday",
+                  "assets/icons/ic_sunny_thunder.svg", "13°C", "10°C"),
               _buildDayOfWeekForecastItem(
-                  "Monday", "assets/ic_big_rain_drops.svg", "13°C", "10°C"),
+                  "Tuesday", "assets/icons/ic_foggy.svg", "14°C", "9°C"),
               _buildDayOfWeekForecastItem(
-                  "Monday", "assets/ic_big_rain_drops.svg", "14°C", "9°C"),
+                  "Wednesday", "assets/ic_big_rain_drops.svg", "15°C", "8°C"),
               _buildDayOfWeekForecastItem(
-                  "Monday", "assets/ic_big_rain_drops.svg", "15°C", "8°C"),
-              _buildDayOfWeekForecastItem(
-                  "Monday", "assets/ic_big_rain_drops.svg", "16°C", "7°C"),
+                  "Thursday", "assets/ic_big_rain_drops.svg", "16°C", "7°C"),
             ],
           ),
         ),
@@ -354,9 +334,9 @@ class _MyHomePageState extends State<MyHomePage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const DefaultTextStyle(
-            style: TextStyle(color: Colors.white, fontSize: 18),
-            child: Text("Mar, 9"),
+          DefaultTextStyle(
+            style: const TextStyle(color: Colors.white, fontSize: 18),
+            child: Text(dayOfWeek),
           ),
           Padding(
             padding: const EdgeInsets.only(left: 16, right: 16),
