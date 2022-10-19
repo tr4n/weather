@@ -49,8 +49,10 @@ class _HomePageState extends State<HomePage> {
                     _buildLocationAndNotification(successState.area),
                     _buildPrimaryWeather(successState.currentCondition),
                     _buildIntroStatsChips(successState.currentCondition),
-                    _buildForecastToday(successState.weathers.firstOrNull() ??
-                        Weather("", "", List.empty())),
+                    _buildForecastToday(
+                        successState.dayWeathers.firstOrNull() ??
+                            Weather("", "", List.empty()),
+                        successState.hourWeathers),
                     _buildNextForecast(),
                   ],
                 );
@@ -195,10 +197,10 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildForecastToday(Weather weather) {
+  Widget _buildForecastToday(Weather weather, List<Hourly> hourlyWeathers) {
     final dateFormat = DateFormat("MMM, d");
     final date = dateFormat.format(DateTime.parse(weather.date));
-    final hourlyWeathers = _getSortedHourlyWeatherList(weather.hourlyWeathers);
+    // final hourlyWeathers = _getSortedHourlyWeatherList(weather.hourlyWeathers);
     return Padding(
       padding: const EdgeInsets.only(top: 32),
       child: Container(
@@ -238,6 +240,7 @@ class _HomePageState extends State<HomePage> {
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: hourlyWeathers
                         .map((e) => _buildHourWeatherItem(e))
                         .toList()),

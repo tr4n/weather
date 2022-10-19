@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:weather/bloc/home/home_event.dart';
 import 'package:weather/bloc/home/home_state.dart';
@@ -22,11 +24,20 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       emitter(HomeLoadFailed("Data load failed"));
     } else {
       final condition = currentConditions.first;
-      final hourlyWeathers = weathers.expand((day) => day.hourlyWeathers);
+      final hourlyWeathers = weathers
+          .expand(
+            (day) => day.hourlyWeathers.map((e) {
+              return e..dayValue = DateTime.parse(day.date).day;
+            }),
+          )
+          .toList()
+        ..sort((a, b) =>
+            (a.dayValue * 10 + a.hourValue) - (b.dayValue * 10 + b.hourValue));
       emitter(
         HomeLoadSuccess(
-          currentCondition: currentConditions.first,
-          weathers: weathers,
+          currentCondition: condition,
+          dayWeathers: weathers,
+          hourWeathers: _getSortedHourlyWeatherList(hourlyWeathers),
           area: areas.first,
         ),
       );
@@ -35,17 +46,19 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
   List<Hourly> _getSortedHourlyWeatherList(List<Hourly> weathers) {
     final currentHour = DateTime.now().hour;
-    final sortedList = weathers..sort((a, b) => a.hourValue - b.hourValue);
-
-    int selectHour = 0;
-    for (Hourly weather in sortedList) {
-      if (currentHour < weather.hourValue) {
+    final currentDay = DateTime.now().day;
+    final sortedList = weathers
+      ..sort((a, b) =>
+          (a.dayValue * 10 + a.hourValue) - (b.dayValue * 10 + b.hourValue));
+    int selectedIndex = 0;
+    for (int index = 0; index < sortedList.length; index++) {
+      final weather = sortedList[index];
+      if (currentHour < weather.hourValue && currentDay == weather.dayValue) {
         break;
       }
-      selectHour = weather.hourValue;
+      selectedIndex = index;
     }
-    return sortedList
-        .map((e) => e..isCurrent = e.hourValue == selectHour)
-        .toList();
+    return sortedList.sublist(
+        selectedIndex, min(weathers.length, selectedIndex + 5));
   }
 }
