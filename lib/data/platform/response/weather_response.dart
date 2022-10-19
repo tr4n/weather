@@ -9,11 +9,11 @@ class WeatherResponse {
   @JsonKey(name: "current_condition")
   final List<CurrentCondition> currentConditions;
   @JsonKey(name: "nearest_area")
-  final List<NearestArea> nearestArea;
+  final List<NearestArea> nearestAreas;
   @JsonKey(name: "weather")
   final List<Weather> weathers;
 
-  WeatherResponse(this.currentConditions, this.nearestArea, this.weathers);
+  WeatherResponse(this.currentConditions, this.nearestAreas, this.weathers);
 
   factory WeatherResponse.fromJson(Map<String, dynamic> json) =>
       _$WeatherResponseFromJson(json);

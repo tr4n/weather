@@ -11,14 +11,14 @@ class Weather {
   @JsonKey(name: "date")
   final String date;
   @JsonKey(name: "hourly")
-  final List<Hourly> hourly;
+  final List<Hourly> hourlyWeathers;
 
-  Weather(this.avgTempC, this.date, this.hourly);
+  Weather(this.avgTempC, this.date, this.hourlyWeathers);
 
   Weather.initDefault()
       : avgTempC = "",
         date = "",
-        hourly = List.empty();
+        hourlyWeathers = List.empty();
 
   factory Weather.fromJson(Map<String, dynamic> json) =>
       _$WeatherFromJson(json);

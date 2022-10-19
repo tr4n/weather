@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:intl/intl.dart';
 import 'package:weather/bloc/home/home_bloc.dart';
 import 'package:weather/bloc/home/home_event.dart';
 import 'package:weather/bloc/home/home_state.dart';
+import 'package:weather/data/model/hourly.dart';
 import 'package:weather/di/injection.dart';
+import 'package:weather/extension/list_ext.dart';
+
+import '../../data/model/models.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -37,13 +42,15 @@ class _HomePageState extends State<HomePage> {
           child: BlocBuilder<HomeBloc, HomeState>(builder: (context, state) {
             switch (state.runtimeType) {
               case HomeLoadSuccess:
+                final successState = state as HomeLoadSuccess;
                 return Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: <Widget>[
-                    _buildLocationAndNotification(),
-                    _buildPrimaryWeather(),
-                    _buildIntroStatsChips(),
-                    _buildForecastToday(),
+                    _buildLocationAndNotification(successState.area),
+                    _buildPrimaryWeather(successState.currentCondition),
+                    _buildIntroStatsChips(successState.currentCondition),
+                    _buildForecastToday(successState.weathers.firstOrNull() ??
+                        Weather("", "", List.empty())),
                     _buildNextForecast(),
                   ],
                 );
@@ -63,7 +70,8 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildLocationAndNotification() {
+  Widget _buildLocationAndNotification(NearestArea area) {
+    final name = area.areaNames.isNotEmpty ? area.areaNames.first.value : "";
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -72,15 +80,12 @@ class _HomePageState extends State<HomePage> {
           mainAxisSize: MainAxisSize.max,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            SvgPicture.asset('assets/ic_map.svg'),
-            const Padding(
-                padding: EdgeInsets.only(left: 16),
+            Image.asset('assets/images/ic_map.png', width: 28, height: 28),
+            Padding(
+                padding: const EdgeInsets.only(left: 16),
                 child: DefaultTextStyle(
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                  ),
-                  child: Text("Fortaleza"),
+                  style: const TextStyle(color: Colors.white, fontSize: 18),
+                  child: Text(name),
                 )),
             const Padding(
               padding: EdgeInsets.only(left: 16.0),
@@ -94,42 +99,43 @@ class _HomePageState extends State<HomePage> {
         ),
         Padding(
           padding: const EdgeInsets.all(0),
-          child: SvgPicture.asset(
-            'assets/ic_notification_alert.svg',
+          child: Image.asset(
+            'assets/images/ic_notification_alert.png',
+            width: 28,
+            height: 28,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildPrimaryWeather() {
+  Widget _buildPrimaryWeather(CurrentCondition condition) {
+    final weatherDescription = condition.weatherDesc.firstOrNull()?.value ?? "";
+    final description =
+        "$weatherDescription, feels like ${condition.feelsLikeC}ºC";
     return Column(
       children: [
-        Image.asset("assets/images/img_sunny_1.png"),
-        const Padding(
-          padding: EdgeInsets.only(top: 0),
+        Image.asset("assets/images/img_sunny_1.png", height: 200),
+        Padding(
+          padding: const EdgeInsets.only(top: 0),
           child: DefaultTextStyle(
-            style: TextStyle(
+            style: const TextStyle(
                 color: Colors.white, fontSize: 64, fontWeight: FontWeight.bold),
-            child: Text("28º"),
+            child: Text("${condition.tempC}º"),
           ),
         ),
-        const DefaultTextStyle(
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-          ),
-          child: Text("Precipitations"),
-        ),
-        const DefaultTextStyle(
-          style: TextStyle(color: Colors.white, fontSize: 18),
-          child: Text("Max.: 31º Min.: 25º"),
+        DefaultTextStyle(
+          style: const TextStyle(color: Colors.white, fontSize: 18),
+          child: Text(description),
         ),
       ],
     );
   }
 
-  Widget _buildIntroStatsChips() {
+  Widget _buildIntroStatsChips(CurrentCondition condition) {
+    final windSpeed = "${condition.windSpeedKmPh} km/h";
+    final humidity = "${condition.humidity}%";
+
     return Padding(
       padding: const EdgeInsets.only(top: 32),
       child: Container(
@@ -147,13 +153,11 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(right: 4),
-                    child: SvgPicture.asset("assets/ic_noun_rain.svg"),
+                    child: Image.asset("assets/images/ic_noun_rain.png",
+                        width: 24, height: 24),
                   ),
                   const DefaultTextStyle(
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                    ),
+                    style: TextStyle(color: Colors.white, fontSize: 14),
                     child: Text("6%"),
                   ),
                 ],
@@ -162,14 +166,12 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(4),
-                    child: SvgPicture.asset("assets/ic_noun_humidity.svg"),
+                    child: Image.asset("assets/images/ic_noun_humidity.png",
+                        width: 24, height: 24),
                   ),
-                  const DefaultTextStyle(
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                    ),
-                    child: Text("90%"),
+                  DefaultTextStyle(
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                    child: Text(humidity),
                   ),
                 ],
               ),
@@ -177,14 +179,12 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(4),
-                    child: SvgPicture.asset("assets/ic_noun_wind.svg"),
+                    child: Image.asset("assets/images/ic_noun_wind.png",
+                        width: 24, height: 24),
                   ),
-                  const DefaultTextStyle(
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                    ),
-                    child: Text("19km/h"),
+                  DefaultTextStyle(
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                    child: Text(windSpeed),
                   ),
                 ],
               ),
@@ -195,7 +195,10 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildForecastToday() {
+  Widget _buildForecastToday(Weather weather) {
+    final dateFormat = DateFormat("MMM, d");
+    final date = dateFormat.format(DateTime.parse(weather.date));
+    final hourlyWeathers = _getSortedHourlyWeatherList(weather.hourlyWeathers);
     return Padding(
       padding: const EdgeInsets.only(top: 32),
       child: Container(
@@ -207,11 +210,12 @@ class _HomePageState extends State<HomePage> {
               color: Color(0x80001026),
               borderRadius: BorderRadius.all(Radius.circular(20))),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [
-                  DefaultTextStyle(
+                children: [
+                  const DefaultTextStyle(
                     style: TextStyle(
                         color: Colors.white,
                         fontSize: 20,
@@ -219,29 +223,24 @@ class _HomePageState extends State<HomePage> {
                     child: Text("Today"),
                   ),
                   DefaultTextStyle(
-                    style: TextStyle(color: Colors.white, fontSize: 18),
-                    child: Text("Mar, 9"),
+                    style: const TextStyle(color: Colors.white, fontSize: 18),
+                    child: Text(date),
                   ),
                 ],
               ),
-              Padding(
-                padding: const EdgeInsets.only(top: 12),
+              // ScrollablePositionedList.builder(
+              //   itemCount: hourlyWeathers.length,
+              //   scrollDirection: Axis.horizontal,
+              //   itemBuilder: (context, index) =>
+              //       _buildHourWeatherItem(hourlyWeathers[index]),
+              //   itemScrollController: itemScrollController,
+              // ),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _buildHourWeatherItem("15:00",
-                        "assets/icons/ic_wind_sunny.svg", "29°C", false),
-                    _buildHourWeatherItem(
-                        "16:00", "assets/icons/ic_sunny.svg", "29°C", false),
-                    _buildHourWeatherItem("17:00",
-                        "assets/icons/ic_sunny_small_rain.svg", "29°C", true),
-                    _buildHourWeatherItem(
-                        "18:00",
-                        "assets/icons/ic_sunny_small_rain_snow.svg",
-                        "29°C",
-                        false),
-                  ],
-                ),
+                    children: hourlyWeathers
+                        .map((e) => _buildHourWeatherItem(e))
+                        .toList()),
               )
             ],
           ),
@@ -250,11 +249,28 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildHourWeatherItem(
-      String hour, String icon, String tempura, bool isCurrent) {
+  List<Hourly> _getSortedHourlyWeatherList(List<Hourly> weathers) {
+    final currentHour = DateTime.now().hour;
+    final sortedList = weathers..sort((a, b) => a.hourValue - b.hourValue);
+
+    int selectHour = 0;
+    for (Hourly weather in sortedList) {
+      if (currentHour < weather.hourValue) {
+        break;
+      }
+      selectHour = weather.hourValue;
+    }
+    return sortedList
+        .map((e) => e..isCurrent = e.hourValue == selectHour)
+        .toList();
+  }
+
+  Widget _buildHourWeatherItem(Hourly hourlyWeather) {
+    final temperate = hourlyWeather.tempC + "°C";
+
     return Container(
       padding: const EdgeInsets.only(top: 20, bottom: 20, left: 8, right: 8),
-      decoration: isCurrent
+      decoration: hourlyWeather.isCurrent
           ? BoxDecoration(
               border: Border.all(color: const Color(0xff2566a3)),
               color: const Color(0x332566a3),
@@ -262,18 +278,20 @@ class _HomePageState extends State<HomePage> {
             )
           : null,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           DefaultTextStyle(
             style: const TextStyle(color: Colors.white, fontSize: 18),
-            child: Text(tempura),
+            child: Text(temperate),
           ),
           Padding(
             padding: const EdgeInsets.only(top: 24, bottom: 24),
-            child: SvgPicture.asset(icon),
+            child: Image.asset("assets/icons/ic_sunny_cloud.png",
+                width: 40, height: 40),
           ),
           DefaultTextStyle(
             style: const TextStyle(color: Colors.white, fontSize: 18),
-            child: Text(hour),
+            child: Text("${hourlyWeather.hourValue}:00"),
           ),
         ],
       ),

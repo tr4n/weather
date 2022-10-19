@@ -3,6 +3,8 @@ import 'package:weather/bloc/home/home_event.dart';
 import 'package:weather/bloc/home/home_state.dart';
 import 'package:weather/data/repository/repositories.dart';
 
+import '../../data/model/models.dart';
+
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final WeatherRepository weatherRepository;
 
@@ -12,16 +14,38 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
   void _onGetHomeData(Emitter<HomeState> emitter) async {
     emitter(HomeLoading());
-    final response = await weatherRepository.getWeatherData("Hanoi");
+    final response = await weatherRepository.getWeatherData("");
     final currentConditions = response.currentConditions;
     final weathers = response.weathers;
-    if (currentConditions.isEmpty || weathers.isEmpty) {
+    final areas = response.nearestAreas;
+    if (currentConditions.isEmpty || weathers.isEmpty || areas.isEmpty) {
       emitter(HomeLoadFailed("Data load failed"));
     } else {
-      emitter(HomeLoadSuccess(
-        currentCondition: currentConditions.first,
-        weathers: weathers,
-      ));
+      final condition = currentConditions.first;
+      final hourlyWeathers = weathers.expand((day) => day.hourlyWeathers);
+      emitter(
+        HomeLoadSuccess(
+          currentCondition: currentConditions.first,
+          weathers: weathers,
+          area: areas.first,
+        ),
+      );
     }
+  }
+
+  List<Hourly> _getSortedHourlyWeatherList(List<Hourly> weathers) {
+    final currentHour = DateTime.now().hour;
+    final sortedList = weathers..sort((a, b) => a.hourValue - b.hourValue);
+
+    int selectHour = 0;
+    for (Hourly weather in sortedList) {
+      if (currentHour < weather.hourValue) {
+        break;
+      }
+      selectHour = weather.hourValue;
+    }
+    return sortedList
+        .map((e) => e..isCurrent = e.hourValue == selectHour)
+        .toList();
   }
 }
