@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:weather/bloc/home/home_event.dart';
 import 'package:weather/bloc/home/home_state.dart';
@@ -36,7 +34,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       )
           .toList()
         ..sort((a, b) => a.compareTo(b));
-      final sortedWeathers = _getSortedHourlyWeatherList(hourlyWeathers);
+      final sortedWeathers = _getSortedHourlyWeatherList(hourlyWeathers).take(8).toList();
+      print(sortedWeathers.map((e) => "${e.dayValue} ${e.time}"));
       emitter(
         HomeLoadSuccess(
             currentCondition: condition,
@@ -50,23 +49,14 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   }
 
   List<Hourly> _getSortedHourlyWeatherList(List<Hourly> weathers) {
-    final currentHour = DateTime
-        .now()
-        .hour;
-    final currentDay = DateTime
-        .now()
-        .day;
-    final sortedList = weathers..sort((a, b) => a.compareTo(b));
-    int selectedIndex = 0;
-    for (int index = 0; index < sortedList.length; index++) {
-      final weather = sortedList[index];
-      if (currentHour < weather.hourValue && currentDay == weather.dayValue) {
-        break;
-      }
-      selectedIndex = index;
-    }
-    return sortedList.sublist(selectedIndex, weathers.length);
+    final currentHour = DateTime.now().hour;
+    final currentDay = DateTime.now().day;
+    return weathers
+        .where((element) =>
+            (element.dayValue == currentDay &&
+                element.hourValue - currentHour > -3) ||
+            (element.dayValue > currentDay))
+        .toList()
+      ..sort((a, b) => a.compareTo(b));
   }
-
-
 }

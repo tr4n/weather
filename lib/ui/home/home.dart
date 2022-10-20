@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:weather/bloc/home/home_bloc.dart';
 import 'package:weather/bloc/home/home_event.dart';
@@ -228,7 +227,7 @@ class _HomePageState extends State<HomePage> {
                 children: hourlyWeathers
                     .map((e) => _buildHourWeatherItem(e))
                     .toList()),
-          )
+          ),
         ],
       ),
     );
@@ -236,7 +235,8 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildHourWeatherItem(Hourly hourlyWeather) {
     final temperate = hourlyWeather.tempC + "°C";
-
+    final icon =
+        "assets/icons/${WeatherType.fromDescription(hourlyWeather.weatherDesc.firstOrNull()?.value ?? "").iconPath}";
     return Container(
       padding: const EdgeInsets.only(top: 20, bottom: 20, left: 8, right: 8),
       decoration: hourlyWeather.isCurrent
@@ -256,7 +256,7 @@ class _HomePageState extends State<HomePage> {
           Padding(
             padding: const EdgeInsets.only(top: 24, bottom: 24),
             child:
-                Image.asset("assets/icons/ic_sunny.png", width: 40, height: 40),
+                Image.asset(icon, width: 40, height: 40),
           ),
           DefaultTextStyle(
             style: const TextStyle(color: Colors.white, fontSize: 18),
@@ -289,7 +289,7 @@ class _HomePageState extends State<HomePage> {
                 style: const TextStyle(color: Colors.white, fontSize: 18),
                 child: Padding(
                   padding: const EdgeInsets.all(4),
-                  child: SvgPicture.asset("assets/icons/ic_calendar.png",
+                  child: Image.asset("assets/icons/ic_calendar.png",
                       width: 24, height: 24),
                 ),
               ),
@@ -305,7 +305,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildDayOfWeekForecastItem(DayWeather dayWeather) {
     final icon =
-        "assets/icons/${WeatherType.fromDescription(dayWeather.description)}";
+        "assets/icons/${WeatherType.fromDescription(dayWeather.description).iconPath}";
     return Padding(
       padding: const EdgeInsets.all(8),
       child: Row(

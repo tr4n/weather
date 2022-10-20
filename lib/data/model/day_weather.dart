@@ -36,13 +36,10 @@ class DayWeather {
                                   : "";
     }
 
-    final hourlyTemperates =
-        weather.hourlyWeathers.map((e) => double.parse(e.tempC));
     maxTemperateC = weather.maxtempC;
     minTemperateC = weather.mintempC;
     description = weather.hourlyWeathers
-            .groupBy<String>(
-                (e) => (e.weatherDesc.firstOrNull() ?? "") as String)
+            .groupBy((e) => (e.weatherDesc.firstOrNull()?.value ?? ""))
             .toList()
             .map((e) => Pair(e.first, e.second.length))
             .maxByOrNull((element) => element.second)

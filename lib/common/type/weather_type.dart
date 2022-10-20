@@ -63,7 +63,7 @@ enum WeatherType {
   final String value;
   final String iconPath;
 
-  static fromDescription(String description) {
+  static WeatherType fromDescription(String description) {
     return values.find((element) => element.value == description) ??
         WeatherType.cloudy;
   }
