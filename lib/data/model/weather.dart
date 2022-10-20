@@ -8,15 +8,27 @@ part 'weather.g.dart';
 class Weather {
   @JsonKey(name: "avgtempC")
   final String avgTempC;
+  @JsonKey(name: "maxtempC")
+  final String maxtempC;
+  @JsonKey(name: "mintempC")
+  final String mintempC;
   @JsonKey(name: "date")
   final String date;
   @JsonKey(name: "hourly")
   final List<Hourly> hourlyWeathers;
 
-  Weather(this.avgTempC, this.date, this.hourlyWeathers);
+  @JsonKey(ignore: true)
+  DateTime dateTime = DateTime.now();
+
+  Weather(this.avgTempC, this.date, this.hourlyWeathers, this.maxtempC,
+      this.mintempC) {
+    dateTime = DateTime.parse(date);
+  }
 
   Weather.initDefault()
       : avgTempC = "",
+        maxtempC = "",
+        mintempC = "",
         date = "",
         hourlyWeathers = List.empty();
 

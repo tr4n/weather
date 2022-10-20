@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:json_annotation/json_annotation.dart';
 import 'package:weather/extension/string_ext.dart';
 
@@ -6,7 +8,7 @@ import 'value.dart';
 part 'hourly.g.dart';
 
 @JsonSerializable()
-class Hourly {
+class Hourly extends Comparable<Hourly> {
   @JsonKey(name: "weatherDesc")
   final List<Value> weatherDesc;
   @JsonKey(name: "tempC")
@@ -42,4 +44,8 @@ class Hourly {
     final fullTime = "0000$time".takeLast(4);
     return {"hour": fullTime.take(2), "minute": fullTime.takeLast(2)};
   }
+
+  @override
+  int compareTo(Hourly other) =>
+      (dayValue * 100 + hourValue) - (other.dayValue * 100 + other.hourValue);
 }

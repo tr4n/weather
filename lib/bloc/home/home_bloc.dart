@@ -26,30 +26,37 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       final condition = currentConditions.first;
       final hourlyWeathers = weathers
           .expand(
-            (day) => day.hourlyWeathers.map((e) {
-              return e..dayValue = DateTime.parse(day.date).day;
+            (day) =>
+            day.hourlyWeathers.map((e) {
+              return e
+                ..dayValue = DateTime
+                    .parse(day.date)
+                    .day;
             }),
-          )
+      )
           .toList()
-        ..sort((a, b) =>
-            (a.dayValue * 10 + a.hourValue) - (b.dayValue * 10 + b.hourValue));
+        ..sort((a, b) => a.compareTo(b));
+      final sortedWeathers = _getSortedHourlyWeatherList(hourlyWeathers);
       emitter(
         HomeLoadSuccess(
-          currentCondition: condition,
-          dayWeathers: weathers,
-          hourWeathers: _getSortedHourlyWeatherList(hourlyWeathers),
-          area: areas.first,
+            currentCondition: condition,
+            dayWeathers: weathers,
+            hourWeathers: sortedWeathers,
+            area: areas.first,
+            days: weathers.map((e) => DayWeather(e)).toList()
         ),
       );
     }
   }
 
   List<Hourly> _getSortedHourlyWeatherList(List<Hourly> weathers) {
-    final currentHour = DateTime.now().hour;
-    final currentDay = DateTime.now().day;
-    final sortedList = weathers
-      ..sort((a, b) =>
-          (a.dayValue * 10 + a.hourValue) - (b.dayValue * 10 + b.hourValue));
+    final currentHour = DateTime
+        .now()
+        .hour;
+    final currentDay = DateTime
+        .now()
+        .day;
+    final sortedList = weathers..sort((a, b) => a.compareTo(b));
     int selectedIndex = 0;
     for (int index = 0; index < sortedList.length; index++) {
       final weather = sortedList[index];
@@ -58,7 +65,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       }
       selectedIndex = index;
     }
-    return sortedList.sublist(
-        selectedIndex, min(weathers.length, selectedIndex + 5));
+    return sortedList.sublist(selectedIndex, weathers.length);
   }
+
+
 }

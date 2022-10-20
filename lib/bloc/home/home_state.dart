@@ -18,15 +18,17 @@ class HomeLoadSuccess extends HomeState {
   final NearestArea area;
   final List<Hourly> hourWeathers;
   final List<Weather> dayWeathers;
+  final List<DayWeather> days;
 
   HomeLoadSuccess(
       {required this.currentCondition,
       required this.hourWeathers,
       required this.dayWeathers,
-      required this.area});
+      required this.area,
+      required this.days});
 
   @override
-  List<Object> get props => [currentCondition, area, hourWeathers, dayWeathers];
+  List<Object> get props => [currentCondition, area, hourWeathers, dayWeathers, days];
 }
 
 class HomeLoadFailed extends HomeState {
