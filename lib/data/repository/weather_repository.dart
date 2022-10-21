@@ -1,7 +1,7 @@
 import '../platform/api.dart';
 
 class WeatherRepository {
-  final Api api;
+  final WeatherApi api;
 
   WeatherRepository({required this.api});
 

@@ -19,91 +19,117 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) =>
-          HomeBloc(weatherRepository: getIt.get())..add(HomeLoaded()),
-      child: Container(
-        height: MediaQuery.of(context).size.height,
-        width: MediaQuery.of(context).size.width,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-              colors: [Color(0xff08244f), Color(0xff134cb5), Color(0xff134cb5)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight),
-        ),
-        child: SingleChildScrollView(
-          padding: EdgeInsets.only(
-            top: MediaQuery.of(context).viewPadding.top,
-            left: 32,
-            right: 32,
-            bottom: 32,
-          ),
-          child: BlocBuilder<HomeBloc, HomeState>(builder: (context, state) {
-            switch (state.runtimeType) {
-              case HomeLoadSuccess:
-                final successState = state as HomeLoadSuccess;
-                return Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: <Widget>[
-                    _buildLocationAndNotification(successState.area),
-                    const SizedBox(height: 20),
-                    _buildPrimaryWeather(successState.currentCondition),
-                    const SizedBox(height: 20),
-                    _buildIntroStatsChips(successState.currentCondition),
-                    const SizedBox(height: 20),
-                    _buildForecastToday(
-                        successState.dayWeathers.firstOrNull() ??
-                            Weather.initDefault(),
-                        successState.hourWeathers),
-                    const SizedBox(height: 20),
-                    _buildNextForecast(successState.days),
-                    const SizedBox(height: 20),
-                  ],
-                );
-              case HomeLoading:
-                return Container(
-                  height: MediaQuery.of(context).size.height,
-                  alignment: Alignment.center,
-                  child: const CircularProgressIndicator(),
-                );
-              case HomeLoadFailed:
-                return Row();
-            }
+      create: (_) => HomeBloc(
+        weatherRepository: getIt.get(),
+        locationRepository: getIt.get(),
+      )..add(HomeLoaded()),
+      child: BlocBuilder<HomeBloc, HomeState>(builder: (context, state) {
+        switch (state.runtimeType) {
+          case HomeLoading:
+            return Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                    colors: DateTime.now().hour >= 18
+                        ? const [
+                      Color(0xff08244f),
+                      Color(0xff134cb5),
+                      Color(0xff134cb5)
+                    ]
+                        : const [
+                      Color(0xff29B2DD),
+                      Color(0xff33AADD),
+                      Color(0xff2DC8EA)
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight),
+              ),
+              height: MediaQuery.of(context).size.height,
+              alignment: Alignment.center,
+              child: const CircularProgressIndicator(),
+            );
+          case HomeLoadFailed:
             return Row();
-          }),
-        ),
-      ),
+          case HomeLoadSuccess:
+            final successState = state as HomeLoadSuccess;
+            return Container(
+              height: MediaQuery.of(context).size.height,
+              width: MediaQuery.of(context).size.width,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                    colors: DateTime.now().hour >= 18
+                        ? const [
+                            Color(0xff08244f),
+                            Color(0xff134cb5),
+                            Color(0xff134cb5)
+                          ]
+                        : const [
+                            Color(0xff29B2DD),
+                            Color(0xff33AADD),
+                            Color(0xff2DC8EA)
+                          ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight),
+              ),
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  BlocProvider.of<HomeBloc>(context).add(HomePullToRefresh());
+                },
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.only(
+                    top: MediaQuery.of(context).viewPadding.top,
+                    left: 32,
+                    right: 32,
+                    bottom: 32,
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: <Widget>[
+                      _buildLocationAndNotification(successState.area),
+                      const SizedBox(height: 20),
+                      _buildPrimaryWeather(successState.currentCondition),
+                      const SizedBox(height: 20),
+                      _buildIntroStatsChips(successState.currentCondition),
+                      const SizedBox(height: 20),
+                      _buildForecastToday(
+                          successState.dayWeathers.firstOrNull() ??
+                              Weather.initDefault(),
+                          successState.hourWeathers),
+                      const SizedBox(height: 20),
+                      _buildNextForecast(successState.days),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
+                ),
+              ),
+            );
+        }
+        return Row();
+      }),
     );
   }
 
   Widget _buildLocationAndNotification(NearestArea area) {
-    final name = area.areaNames.isNotEmpty ? area.areaNames.first.value : "";
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Row(
           mainAxisSize: MainAxisSize.max,
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Image.asset('assets/images/ic_map.png', width: 28, height: 28),
+            const Icon(Icons.location_city, color: Colors.white, size: 28),
             const SizedBox(width: 16),
             DefaultTextStyle(
               style: const TextStyle(color: Colors.white, fontSize: 18),
-              child: Text(name),
-            ),
-            const SizedBox(width: 16),
-            const Icon(
-              Icons.keyboard_arrow_down,
-              size: 24,
-              color: Colors.white,
+              child: Text(area.getLocationName()),
             ),
           ],
         ),
-        Image.asset(
-          'assets/images/ic_notification_alert.png',
-          width: 28,
-          height: 28,
-        ),
+        // Image.asset(
+        //   'assets/images/ic_notification_alert.png',
+        //   width: 28,
+        //   height: 28,
+        // ),
       ],
     );
   }

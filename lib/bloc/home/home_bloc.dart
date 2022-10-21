@@ -7,9 +7,12 @@ import '../../data/model/models.dart';
 
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final WeatherRepository weatherRepository;
+  final LocationRepository locationRepository;
 
-  HomeBloc({required this.weatherRepository}) : super(HomeStateInitialized()) {
+  HomeBloc({required this.weatherRepository, required this.locationRepository})
+      : super(HomeStateInitialized()) {
     on<HomeLoaded>((_, emit) => _onGetHomeData(emit));
+    on<HomePullToRefresh>((_, emit) => _onGetHomeData(emit));
   }
 
   void _onGetHomeData(Emitter<HomeState> emitter) async {
@@ -22,27 +25,25 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       emitter(HomeLoadFailed("Data load failed"));
     } else {
       final condition = currentConditions.first;
+      final cities = await locationRepository.getPlaceMark(
+          areas.first.latitude, areas.first.longitude);
       final hourlyWeathers = weathers
           .expand(
-            (day) =>
-            day.hourlyWeathers.map((e) {
-              return e
-                ..dayValue = DateTime
-                    .parse(day.date)
-                    .day;
+            (day) => day.hourlyWeathers.map((e) {
+              return e..dayValue = DateTime.parse(day.date).day;
             }),
-      )
+          )
           .toList()
         ..sort((a, b) => a.compareTo(b));
-      final sortedWeathers = _getSortedHourlyWeatherList(hourlyWeathers).take(8).toList();
+      final sortedWeathers =
+          _getSortedHourlyWeatherList(hourlyWeathers).take(8).toList();
       emitter(
         HomeLoadSuccess(
             currentCondition: condition,
             dayWeathers: weathers,
             hourWeathers: sortedWeathers,
-            area: areas.first,
-            days: weathers.map((e) => DayWeather(e)).toList()
-        ),
+            area: areas.first..cities = cities,
+            days: weathers.map((e) => DayWeather(e)).toList()),
       );
     }
   }

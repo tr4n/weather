@@ -2,12 +2,12 @@ import 'package:dio/dio.dart';
 
 import 'response/responses.dart';
 
-class Api {
+class WeatherApi {
   static const _baseUrl = "https://wttr.in";
 
   final Dio dio;
 
-  Api(this.dio) {
+  WeatherApi(this.dio) {
     dio
       ..interceptors.add(LogInterceptor(responseBody: true))
       ..options.queryParameters.addAll({"format": "j1"});
