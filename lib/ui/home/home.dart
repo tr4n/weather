@@ -18,6 +18,16 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
+    const backgroundLight = [
+      Color(0xff08244f),
+      Color(0xff134cb5),
+      Color(0xff134cb5)
+    ];
+    const backgroundNight = [
+      Color(0xff29B2DD),
+      Color(0xff33AADD),
+      Color(0xff2DC8EA)
+    ];
     return BlocProvider(
       create: (_) => HomeBloc(
         weatherRepository: getIt.get(),
@@ -30,16 +40,8 @@ class _HomePageState extends State<HomePage> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                     colors: DateTime.now().hour >= 18
-                        ? const [
-                      Color(0xff08244f),
-                      Color(0xff134cb5),
-                      Color(0xff134cb5)
-                    ]
-                        : const [
-                      Color(0xff29B2DD),
-                      Color(0xff33AADD),
-                      Color(0xff2DC8EA)
-                    ],
+                        ? backgroundLight
+                        : backgroundNight,
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight),
               ),
@@ -77,9 +79,9 @@ class _HomePageState extends State<HomePage> {
                 child: SingleChildScrollView(
                   padding: EdgeInsets.only(
                     top: MediaQuery.of(context).viewPadding.top,
-                    left: 32,
-                    right: 32,
-                    bottom: 32,
+                    left: MediaQuery.of(context).size.width * 0.05,
+                    right: 24,
+                    bottom: MediaQuery.of(context).size.width * 0.05,
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -144,11 +146,11 @@ class _HomePageState extends State<HomePage> {
             height: 200),
         DefaultTextStyle(
           style: const TextStyle(
-              color: Colors.white, fontSize: 64, fontWeight: FontWeight.bold),
+              color: Colors.white, fontSize: 56, fontWeight: FontWeight.bold),
           child: Text("${condition.tempC}º"),
         ),
         DefaultTextStyle(
-          style: const TextStyle(color: Colors.white, fontSize: 18),
+          style: const TextStyle(color: Colors.white, fontSize: 16),
           child: Text(description),
         ),
       ],
@@ -214,7 +216,7 @@ class _HomePageState extends State<HomePage> {
     final date = dateFormat.format(DateTime.parse(weather.date));
     // final hourlyWeathers = _getSortedHourlyWeatherList(weather.hourlyWeathers);
     return Container(
-      padding: const EdgeInsets.only(left: 20, top: 16, right: 20, bottom: 16),
+      padding: const EdgeInsets.only(left: 16, top: 16, right: 16, bottom: 16),
       decoration: const BoxDecoration(
           color: Color(0x80001026),
           borderRadius: BorderRadius.all(Radius.circular(20))),
@@ -227,12 +229,12 @@ class _HomePageState extends State<HomePage> {
               const DefaultTextStyle(
                 style: TextStyle(
                     color: Colors.white,
-                    fontSize: 20,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold),
                 child: Text("Today"),
               ),
               DefaultTextStyle(
-                style: const TextStyle(color: Colors.white, fontSize: 18),
+                style: const TextStyle(color: Colors.white, fontSize: 16),
                 child: Text(date),
               ),
             ],
@@ -272,7 +274,7 @@ class _HomePageState extends State<HomePage> {
         mainAxisSize: MainAxisSize.min,
         children: [
           DefaultTextStyle(
-            style: const TextStyle(color: Colors.white, fontSize: 18),
+            style: const TextStyle(color: Colors.white, fontSize: 16),
             child: Text(temperate),
           ),
           Padding(
@@ -283,7 +285,7 @@ class _HomePageState extends State<HomePage> {
                 height: 40),
           ),
           DefaultTextStyle(
-            style: const TextStyle(color: Colors.white, fontSize: 18),
+            style: const TextStyle(color: Colors.white, fontSize: 16),
             child: Text("${hourlyWeather.hourValue}:00"),
           ),
         ],
@@ -293,7 +295,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildNextForecast(List<DayWeather> dayWeathers) {
     return Container(
-      padding: const EdgeInsets.only(left: 20, top: 16, right: 20, bottom: 16),
+      padding: const EdgeInsets.only(left: 16, top: 16, right: 16, bottom: 16),
       decoration: const BoxDecoration(
           color: Color(0x80001026),
           borderRadius: BorderRadius.all(Radius.circular(20))),
@@ -305,12 +307,12 @@ class _HomePageState extends State<HomePage> {
               const DefaultTextStyle(
                 style: TextStyle(
                     color: Colors.white,
-                    fontSize: 20,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold),
                 child: Text("Next Forecast"),
               ),
               DefaultTextStyle(
-                style: const TextStyle(color: Colors.white, fontSize: 18),
+                style: const TextStyle(color: Colors.white, fontSize: 16),
                 child: Padding(
                   padding: const EdgeInsets.all(4),
                   child: Image.asset("assets/icons/ic_calendar.png",
@@ -332,15 +334,14 @@ class _HomePageState extends State<HomePage> {
     return Padding(
       padding: const EdgeInsets.all(8),
       child: Row(
-        //mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
             child: DefaultTextStyle(
-              style: const TextStyle(color: Colors.white, fontSize: 18),
+              style: const TextStyle(color: Colors.white, fontSize: 16),
               child: Text(dayWeather.title),
             ),
           ),
-          const SizedBox(width: 32),
           Image.asset(
             dayWeather.weatherType.getIconPath(
                 dayWeather.weather.dateTime.day == currentTime.day
@@ -354,17 +355,17 @@ class _HomePageState extends State<HomePage> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 DefaultTextStyle(
-                  style: const TextStyle(color: Colors.white, fontSize: 18),
+                  style: const TextStyle(color: Colors.white, fontSize: 16),
                   child: Text(dayWeather.maxTemperateC),
                 ),
                 const SizedBox(width: 2),
                 const DefaultTextStyle(
-                  style: TextStyle(color: Colors.white54, fontSize: 18),
+                  style: TextStyle(color: Colors.white54, fontSize: 16),
                   child: Text("/"),
                 ),
                 const SizedBox(width: 2),
                 DefaultTextStyle(
-                  style: const TextStyle(color: Colors.white, fontSize: 18),
+                  style: const TextStyle(color: Colors.white, fontSize: 16),
                   child: Text(dayWeather.minTemperateC + "°C"),
                 ),
               ],
