@@ -35,7 +35,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           .toList()
         ..sort((a, b) => a.compareTo(b));
       final sortedWeathers = _getSortedHourlyWeatherList(hourlyWeathers).take(8).toList();
-      print(sortedWeathers.map((e) => "${e.dayValue} ${e.time}"));
       emitter(
         HomeLoadSuccess(
             currentCondition: condition,

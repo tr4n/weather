@@ -1,8 +1,10 @@
 import 'dart:ffi';
 
 import 'package:json_annotation/json_annotation.dart';
+import 'package:weather/extension/list_ext.dart';
 import 'package:weather/extension/string_ext.dart';
 
+import '../../common/type/weather_type.dart';
 import 'value.dart';
 
 part 'hourly.g.dart';
@@ -31,11 +33,16 @@ class Hourly extends Comparable<Hourly> {
   @JsonKey(ignore: true)
   int dayValue = 0;
 
+  @JsonKey(ignore: true)
+  WeatherType weatherType = WeatherType.cloudy;
+
   Hourly(this.weatherDesc, this.tempC, this.time) {
     final hourMinute = getHourMinute();
     hour = hourMinute["hour"] ?? "0";
     minute = hourMinute["minute"] ?? "00";
     hourValue = int.parse(hour);
+    weatherType =
+        WeatherType.fromDescription(weatherDesc.firstOrNull()?.value ?? "");
   }
 
   factory Hourly.fromJson(Map<String, dynamic> json) => _$HourlyFromJson(json);

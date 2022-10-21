@@ -1,5 +1,8 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:weather/extension/list_ext.dart';
 
+import '../../common/pair.dart';
+import '../../common/type/weather_type.dart';
 import 'hourly.dart';
 
 part 'weather.g.dart';
@@ -20,9 +23,23 @@ class Weather {
   @JsonKey(ignore: true)
   DateTime dateTime = DateTime.now();
 
+  @JsonKey(ignore: true)
+  WeatherType weatherType = WeatherType.cloudy;
+
+  @JsonKey(ignore: true)
+  String description = "";
+
   Weather(this.avgTempC, this.date, this.hourlyWeathers, this.maxtempC,
       this.mintempC) {
     dateTime = DateTime.parse(date);
+    description = hourlyWeathers
+            .groupBy((e) => (e.weatherDesc.firstOrNull()?.value ?? ""))
+            .toList()
+            .map((e) => Pair(e.first, e.second.length))
+            .maxByOrNull((element) => element.second)
+            ?.first ??
+        "";
+    weatherType = WeatherType.fromDescription(description);
   }
 
   Weather.initDefault()

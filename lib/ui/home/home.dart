@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import 'package:weather/bloc/home/home_bloc.dart';
 import 'package:weather/bloc/home/home_event.dart';
 import 'package:weather/bloc/home/home_state.dart';
-import 'package:weather/common/type/weather_type.dart';
 import 'package:weather/data/model/models.dart';
 import 'package:weather/di/injection.dart';
 import 'package:weather/extension/list_ext.dart';
@@ -115,7 +114,8 @@ class _HomePageState extends State<HomePage> {
         "$weatherDescription, feels like ${condition.feelsLikeC}ºC";
     return Column(
       children: [
-        Image.asset("assets/images/img_sunny_1.png", height: 200),
+        Image.asset(condition.weatherType.getImagePath(DateTime.now().hour),
+            height: 200),
         DefaultTextStyle(
           style: const TextStyle(
               color: Colors.white, fontSize: 64, fontWeight: FontWeight.bold),
@@ -139,46 +139,44 @@ class _HomePageState extends State<HomePage> {
           color: Color(0x80001026),
           borderRadius: BorderRadius.all(Radius.circular(20))),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(right: 4),
-                child: Image.asset("assets/images/ic_noun_rain.png",
-                    width: 24, height: 24),
-              ),
-              const DefaultTextStyle(
-                style: TextStyle(color: Colors.white, fontSize: 14),
-                child: Text("6%"),
-              ),
-            ],
+          Expanded(
+            child: Row(
+              children: [
+                Image.asset("assets/icons/ic_uv.png",
+                    width: 24, height: 24, color: Colors.white),
+                const SizedBox(width: 4),
+                DefaultTextStyle(
+                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  child: Text(condition.uvIndex),
+                ),
+              ],
+            ),
           ),
           Row(
             children: [
-              Padding(
-                padding: const EdgeInsets.all(4),
-                child: Image.asset("assets/images/ic_noun_humidity.png",
-                    width: 24, height: 24),
-              ),
+              Image.asset("assets/images/ic_noun_humidity.png",
+                  width: 24, height: 24),
+              const SizedBox(width: 4),
               DefaultTextStyle(
                 style: const TextStyle(color: Colors.white, fontSize: 14),
                 child: Text(humidity),
               ),
             ],
           ),
-          Row(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(4),
-                child: Image.asset("assets/images/ic_noun_wind.png",
+          Expanded(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Image.asset("assets/images/ic_noun_wind.png",
                     width: 24, height: 24),
-              ),
-              DefaultTextStyle(
-                style: const TextStyle(color: Colors.white, fontSize: 14),
-                child: Text(windSpeed),
-              ),
-            ],
+                const SizedBox(width: 4),
+                DefaultTextStyle(
+                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  child: Text(windSpeed),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -235,8 +233,6 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildHourWeatherItem(Hourly hourlyWeather) {
     final temperate = hourlyWeather.tempC + "°C";
-    final icon =
-        "assets/icons/${WeatherType.fromDescription(hourlyWeather.weatherDesc.firstOrNull()?.value ?? "").iconPath}";
     return Container(
       padding: const EdgeInsets.only(top: 20, bottom: 20, left: 8, right: 8),
       decoration: hourlyWeather.isCurrent
@@ -255,8 +251,10 @@ class _HomePageState extends State<HomePage> {
           ),
           Padding(
             padding: const EdgeInsets.only(top: 24, bottom: 24),
-            child:
-                Image.asset(icon, width: 40, height: 40),
+            child: Image.asset(
+                hourlyWeather.weatherType.getIconPath(hourlyWeather.hourValue),
+                width: 40,
+                height: 40),
           ),
           DefaultTextStyle(
             style: const TextStyle(color: Colors.white, fontSize: 18),
@@ -304,8 +302,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildDayOfWeekForecastItem(DayWeather dayWeather) {
-    final icon =
-        "assets/icons/${WeatherType.fromDescription(dayWeather.description).iconPath}";
+    final currentTime = DateTime.now();
     return Padding(
       padding: const EdgeInsets.all(8),
       child: Row(
@@ -319,7 +316,10 @@ class _HomePageState extends State<HomePage> {
           ),
           const SizedBox(width: 32),
           Image.asset(
-            icon,
+            dayWeather.weatherType.getIconPath(
+                dayWeather.weather.dateTime.day == currentTime.day
+                    ? currentTime.hour
+                    : 9),
             width: 50,
             height: 50,
           ),

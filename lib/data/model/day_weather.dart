@@ -10,9 +10,12 @@ class DayWeather {
   String minTemperateC = "";
   String description = "";
 
+  Weather weather;
+  WeatherType weatherType = WeatherType.cloudy;
+
   List<Hourly> hourlyWeathers = List.empty();
 
-  DayWeather(Weather weather) {
+  DayWeather(this.weather) {
     final currentDay = DateTime.now().day;
     if (weather.dateTime.day == currentDay) {
       title = "Today";
@@ -45,5 +48,6 @@ class DayWeather {
             .maxByOrNull((element) => element.second)
             ?.first ??
         "";
+    weatherType = WeatherType.fromDescription(description);
   }
 }
