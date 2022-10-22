@@ -3,7 +3,7 @@ import 'package:weather/extension/list_ext.dart';
 
 import '../../common/pair.dart';
 import '../../common/type/weather_type.dart';
-import 'hourly.dart';
+import 'models.dart';
 
 part 'weather.g.dart';
 
@@ -19,6 +19,8 @@ class Weather {
   final String date;
   @JsonKey(name: "hourly")
   final List<Hourly> hourlyWeathers;
+  @JsonKey(name: "astronomy")
+  final List<Astronomy> astronomy;
 
   @JsonKey(ignore: true)
   DateTime dateTime = DateTime.now();
@@ -30,7 +32,7 @@ class Weather {
   String description = "";
 
   Weather(this.avgTempC, this.date, this.hourlyWeathers, this.maxtempC,
-      this.mintempC) {
+      this.mintempC, this.astronomy) {
     dateTime = DateTime.parse(date);
     description = hourlyWeathers
             .groupBy((e) => (e.weatherDesc.firstOrNull()?.value ?? ""))
@@ -47,7 +49,8 @@ class Weather {
         maxtempC = "",
         mintempC = "",
         date = "",
-        hourlyWeathers = List.empty();
+        hourlyWeathers = List.empty(),
+        astronomy = List.empty();
 
   factory Weather.fromJson(Map<String, dynamic> json) =>
       _$WeatherFromJson(json);

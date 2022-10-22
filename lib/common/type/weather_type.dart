@@ -149,11 +149,11 @@ enum WeatherType {
   final String _imageNight;
 
   String getIconPath(num hour) {
-    return hour >= 18 ? "assets/icons/$_iconNight" : "assets/icons/$_iconLight";
+    return (hour >= 18 || hour < 6) ? "assets/icons/$_iconNight" : "assets/icons/$_iconLight";
   }
 
   String getImagePath(num hour) {
-    return hour >= 18
+    return (hour >= 18 || hour < 6)
         ? "assets/images/$_imageNight"
         : "assets/images/$_imageLight";
   }
